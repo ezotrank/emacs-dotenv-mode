@@ -48,6 +48,7 @@
     (modify-syntax-entry ?\" "\"" table) ; ?\" is a string delimiter
     (modify-syntax-entry ?# "<" table)   ; ?# starts comments
     (modify-syntax-entry ?\n ">" table)  ; ?\n ends comments
+
     (modify-syntax-entry ?_ "_" table)   ; ?_ can be used in variable and command names
     (modify-syntax-entry ?\\ "\\" table) ; ?\\ is an escape sequence character
     (modify-syntax-entry ?$ "'" table)   ; ?$ is an expression prefix; Used in highlighting $VARIABLES, ${SUBSTITUTED_VARIABLES}, and $(substituted commands) embedded in double-quoted strings
@@ -105,6 +106,18 @@
         "\\.env\\'"
         "\\.env\\.example\\'"
         ))
+
+(defun dotenv-load-buffer ()
+  "Load environments' variables from current buffer"
+  (interactive)
+  (let ((file-path buffer-file-name))
+    (with-temp-buffer
+      (insert-file-contents file-path)
+      (mapcar (lambda (x)
+                (when (> (length x) 0)
+                  (let ((pair (split-string x "=")))
+                    (setenv (nth 0 pair) (nth 1 pair)))))
+              (split-string (buffer-string) "\n" t)))))
 
 (provide 'dotenv-mode)
 
